@@ -1,5 +1,5 @@
 from django.core.urlresolvers import resolve
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.http import HttpRequest
 from lists.models import Item
 from lists.views import home_page
@@ -30,7 +30,7 @@ class HomePageTest(TestCase):
         self.assertEqual(new_item.text, 'A new list item')
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
 
 #        self.assertIn('A new list item', response.content)
 #        expected_html = render_to_string(
@@ -64,12 +64,26 @@ class ItemModelTest(TestCase):
         home_page(request)
         self.assertEqual(Item.objects.all().count(), 0)
 
-    def test_home_page_displays_all_list_items(self):
+#    def test_home_page_displays_all_list_items(self):
+#        Item.objects.create(text='itemey 1')
+#        Item.objects.create(text='itemey 2')
+#
+#        request = HttpRequest()
+#        response = home_page(request)
+#
+#        self.assertIn('itemey 1', response.content)
+#        self.assertIn('itemey 2', response.content)
+#
+
+class ListViewTest(TestCase):
+
+    def test_list_view_displays_all_items(self):
         Item.objects.create(text='itemey 1')
         Item.objects.create(text='itemey 2')
 
-        request = HttpRequest()
-        response = home_page(request)
+        client = Client()
+        response = client.get('/lists/the-only-list-in-the-world/')
 
         self.assertIn('itemey 1', response.content)
         self.assertIn('itemey 2', response.content)
+        self.assertTemplateUsed(response, 'list.html')
